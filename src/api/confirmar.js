@@ -1,6 +1,9 @@
 const confirmacoes = require('../db/confirmacoes');
 const { enviarEmail } = require('../email/enviar-email');
 
+// Lista de nomes bloqueados (não podem confirmar presença)
+const NOMES_BLOQUEADOS = ['izabelle', 'iza', 'zabele', 'zaza'];
+
 // Lista de sugestões de presentes
 const SUGESTOES_PRESENTES = [
   'Perfume',
@@ -14,6 +17,16 @@ const SUGESTOES_PRESENTES = [
   'Vinho ou espumante',
   'Kit de skincare'
 ];
+
+/**
+ * Verifica se um nome está na lista de bloqueados
+ * @param {string} nome - Nome a ser verificado
+ * @returns {boolean} - true se o nome está bloqueado
+ */
+function isNomeBloqueado(nome) {
+  const nomeNormalizado = nome.trim().toLowerCase();
+  return NOMES_BLOQUEADOS.some(bloqueado => nomeNormalizado.includes(bloqueado));
+}
 
 /**
  * Handler para confirmar presença
@@ -48,6 +61,16 @@ async function confirmarPresenca(req, res) {
       });
     }
     
+    // Validação: verificar se o nome está bloqueado
+    if (isNomeBloqueado(nome)) {
+      console.log(`🚫 Tentativa de confirmação com nome bloqueado: ${nome.trim()}`);
+      return res.status(403).json({
+        success: false,
+        message: 'Essa pessoa não foi convidada',
+        nome_bloqueado: true
+      });
+    }
+    
     // Processar acompanhantes (se fornecidos)
     const acompanhantesArray = Array.isArray(acompanhantes) ? acompanhantes : [];
     
@@ -72,6 +95,21 @@ async function confirmarPresenca(req, res) {
           nome: false,
           acompanhantes: camposVaziosAcompanhantes
         }
+      });
+    }
+    
+    // Validação: verificar se algum acompanhante está bloqueado
+    const acompanhantesBloqueados = acompanhantesArray.map(acomp => isNomeBloqueado(acomp));
+    
+    if (acompanhantesBloqueados.some(bloqueado => bloqueado)) {
+      const nomesBloqueados = acompanhantesArray.filter((_, index) => acompanhantesBloqueados[index]);
+      console.log(`🚫 Tentativa de confirmação com acompanhante(s) bloqueado(s): ${nomesBloqueados.join(', ')}`);
+      
+      return res.status(403).json({
+        success: false,
+        message: 'Essa pessoa não foi convidada',
+        nome_bloqueado: true,
+        acompanhantes_bloqueados: acompanhantesBloqueados
       });
     }
     
