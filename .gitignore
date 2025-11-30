@@ -1,0 +1,4 @@
+festa-back/
+node_modules/
+.env
+database.sqlite
