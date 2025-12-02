@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const { dbConnection } = require('./db');
 const { confirmarPresenca, listarConfirmacoes } = require('./api/confirmar');
+const { limparBanco, estatisticas } = require('./api/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,10 @@ app.post('/api/confirmar-presenca', confirmarPresenca);
 
 // Rota para listar confirmações (admin)
 app.get('/api/confirmacoes', listarConfirmacoes);
+
+// Rotas de administração
+app.post('/api/admin/limpar-banco', limparBanco);
+app.get('/api/admin/estatisticas', estatisticas);
 
 // Middleware de erro 404
 app.use((req, res) => {
