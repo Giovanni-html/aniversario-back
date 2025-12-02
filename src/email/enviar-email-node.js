@@ -30,11 +30,14 @@ async function enviarEmail(nomeConvidado, timestamp) {
         pass: process.env.EMAIL_PASSWORD
       },
       tls: {
-        rejectUnauthorized: false // Aceitar certificados auto-assinados
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
       },
-      connectionTimeout: 10000, // 10 segundos
-      greetingTimeout: 10000,
-      socketTimeout: 10000
+      connectionTimeout: 30000, // 30 segundos
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      logger: true, // Ativar logs
+      debug: true // Ativar debug
     });
     
     // Montar o corpo do email
