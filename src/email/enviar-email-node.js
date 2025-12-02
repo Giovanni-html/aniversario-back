@@ -20,14 +20,21 @@ async function enviarEmail(nomeConvidado, timestamp) {
     const acompanhantes = nomesArray.slice(1);
     
     // Criar transporter
+    const port = parseInt(process.env.EMAIL_PORT || '587');
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: false, // true para 465, false para outras portas
+      port: port,
+      secure: port === 465, // true para 465, false para 587
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
-      }
+      },
+      tls: {
+        rejectUnauthorized: false // Aceitar certificados auto-assinados
+      },
+      connectionTimeout: 10000, // 10 segundos
+      greetingTimeout: 10000,
+      socketTimeout: 10000
     });
     
     // Montar o corpo do email
