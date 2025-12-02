@@ -1,3 +1,6 @@
+// Carregar variáveis de ambiente
+require('dotenv').config();
+
 const { enviarEmail } = require('./src/email/enviar-email');
 
 async function testar() {
@@ -16,7 +19,7 @@ async function testar() {
     
     if (sucesso) {
       console.log('\n✅ Email enviado com sucesso!');
-      console.log('   Verifique a caixa de entrada de gatinha@gmail.com');
+      console.log(`   Verifique a caixa de entrada de ${process.env.EMAIL_TO || 'behgatissima@gmail.com'}`);
     } else {
       console.log('\n⚠️  Email não foi enviado');
       console.log('   Possíveis causas:');

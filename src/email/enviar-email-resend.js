@@ -84,15 +84,21 @@ ${acompanhantes.length > 0 ? `\n👥 Acompanhantes:\n${acompanhantes.map((a, i) 
     `;
     
     // Enviar email
+    const emailTo = process.env.EMAIL_TO || 'behgatissima@gmail.com';
+    console.log(`📤 Enviando email para: ${emailTo}`);
+    
     const data = await resend.emails.send({
       from: 'Aniversário da Beh 🎂 <onboarding@resend.dev>',
-      to: [process.env.EMAIL_TO || 'behgatissima@gmail.com'],
+      to: [emailTo],
       subject: `🎉 Nova confirmação: ${nomePrincipal}${acompanhantes.length > 0 ? ` +${acompanhantes.length}` : ''}`,
       html: htmlEmail,
       text: textoEmail
     });
     
-    console.log(`📧 Email enviado com sucesso! ID: ${data.id}`);
+    console.log(`📧 Email enviado com sucesso!`);
+    console.log(`   ID: ${data.id || 'N/A'}`);
+    console.log(`   Para: ${emailTo}`);
+    console.log(`   Resposta completa:`, JSON.stringify(data, null, 2));
     return true;
     
   } catch (error) {
