@@ -1,4 +1,4 @@
-const confirmacoes = require('../db/confirmacoes');
+const { confirmacoes } = require('../db');
 const { enviarEmail } = require('../email/enviar-email');
 
 // Lista de nomes bloqueados (não podem confirmar presença)
