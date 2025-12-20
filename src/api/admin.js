@@ -55,6 +55,45 @@ async function limparBanco(req, res) {
 }
 
 /**
+ * Lista estatísticas do banco (sem senha - para dashboard)
+ */
+async function dashboardStats(req, res) {
+  try {
+    const total = await confirmacoes.contarConfirmacoes();
+    const lista = await confirmacoes.listarConfirmacoes();
+    
+    // Contar principais e acompanhantes
+    const usePostgres = process.env.DATABASE_URL ? true : false;
+    let principais = 0;
+    let acompanhantes = 0;
+    
+    if (usePostgres) {
+      principais = lista.filter(c => !c.id_principal).length;
+      acompanhantes = lista.filter(c => c.id_principal).length;
+    } else {
+      principais = lista.filter(c => c.tipo === 'principal').length;
+      acompanhantes = lista.filter(c => c.tipo === 'acompanhante').length;
+    }
+    
+    return res.status(200).json({
+      success: true,
+      total: total,
+      principais: principais,
+      acompanhantes: acompanhantes,
+      confirmacoes: lista
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar estatísticas:', error);
+    
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar estatísticas'
+    });
+  }
+}
+
+/**
  * Lista estatísticas do banco
  */
 async function estatisticas(req, res) {
@@ -105,5 +144,6 @@ async function estatisticas(req, res) {
 
 module.exports = {
   limparBanco,
-  estatisticas
+  estatisticas,
+  dashboardStats
 };
