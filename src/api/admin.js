@@ -55,6 +55,71 @@ async function limparBanco(req, res) {
 }
 
 /**
+ * Deleta uma confirmação específica
+ */
+async function deletarConfirmacao(req, res) {
+  try {
+    const { id } = req.params;
+    
+    console.log(`🗑️  Deletando confirmação ID: ${id}`);
+    
+    // Verificar se está usando PostgreSQL ou SQLite
+    const usePostgres = process.env.DATABASE_URL ? true : false;
+    
+    if (usePostgres) {
+      // PostgreSQL - deletar acompanhantes primeiro, depois o principal
+      const pool = getPool();
+      
+      // Deletar acompanhantes
+      await pool.query('DELETE FROM confirmacoes WHERE id_principal = $1', [id]);
+      
+      // Deletar principal
+      const result = await pool.query('DELETE FROM confirmacoes WHERE id = $1', [id]);
+      
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Confirmação não encontrada'
+        });
+      }
+      
+      console.log('✅ Confirmação deletada do PostgreSQL');
+    } else {
+      // SQLite - deletar acompanhantes primeiro, depois o principal
+      const db = require('../db/connection');
+      
+      // Deletar acompanhantes
+      await db.executarComando('DELETE FROM confirmacoes WHERE convidado_principal_id = ?', [id]);
+      
+      // Deletar principal
+      const result = await db.executarComando('DELETE FROM confirmacoes WHERE id = ?', [id]);
+      
+      if (result.changes === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Confirmação não encontrada'
+        });
+      }
+      
+      console.log('✅ Confirmação deletada do SQLite');
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Confirmação deletada com sucesso'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao deletar confirmação:', error);
+    
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao deletar confirmação'
+    });
+  }
+}
+
+/**
  * Lista estatísticas do banco (sem senha - para dashboard)
  */
 async function dashboardStats(req, res) {
@@ -145,5 +210,6 @@ async function estatisticas(req, res) {
 module.exports = {
   limparBanco,
   estatisticas,
-  dashboardStats
+  dashboardStats,
+  deletarConfirmacao
 };
