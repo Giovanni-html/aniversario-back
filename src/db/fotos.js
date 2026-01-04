@@ -1,4 +1,13 @@
-const db = require('./connection');
+// Default to SQLite connection, but allow injection
+let db = require('./connection');
+
+/**
+ * Set database connection (for dependency injection)
+ * @param {Object} dbConnection
+ */
+function setDbConnection(dbConnection) {
+  db = dbConnection;
+}
 
 /**
  * Create fotos table if it doesn't exist
@@ -101,4 +110,5 @@ module.exports = {
   contarFotos,
   buscarFotoPorId,
   deletarFoto,
+  setDbConnection
 };

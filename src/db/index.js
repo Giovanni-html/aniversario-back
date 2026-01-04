@@ -16,6 +16,8 @@ if (usePostgres) {
   confirmacoes = require('./confirmacoes-postgres');
   // fotos usa SQLite-style queries que funcionam em ambos
   fotos = require('./fotos');
+  // Injetar conexão Postgres
+  fotos.setDbConnection(dbConnection);
 } else {
   console.log('📁 Usando SQLite');
   dbConnection = require('./connection');
