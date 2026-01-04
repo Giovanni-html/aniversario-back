@@ -72,12 +72,61 @@ async function fecharConexao() {
  */
 async function executarQuery(sql, params = []) {
   const client = getPool();
-  return await client.query(sql, params);
+  
+  // Converter ? para $1, $2, etc se necessário
+  if (sql.includes('?')) {
+    let paramCount = 1;
+    sql = sql.replace(/\?/g, () => `$${paramCount++}`);
+  }
+  
+  // Para queries de listagem, normalizar retorno para parecer array direto (compatível com adapter SQLite que retorna rows)
+  // Mas espera, o adapter sqlite retorna rows direto. O PG retorna objeto Result { rows: [] }.
+  // O fotos.js espera que executarQuery retorne o array de linhas.
+  
+  const result = await client.query(sql, params);
+  return result.rows;
+}
+
+/**
+ * Executa uma query que retorna uma única linha
+ */
+async function executarQueryUnica(sql, params = []) {
+  const result = await executarQuery(sql, params);
+  return result.rows[0];
+}
+
+/**
+ * Executa um comando (INSERT, UPDATE, DELETE)
+ * Retorna objeto compatível com o adapter SQLite { lastID, changes }
+ * Nota: PostgreSQL retorna rows, rowCount, oide command.
+ * Para INSERT retornar ID, o SQL deve ter "RETURNING id"
+ */
+async function executarComando(sql, params = []) {
+  // Ajuste para SQLite vs Postgres:
+  // Postgres usa $1, $2, etc. SQLite usa ?.
+  // Precisamos converter ? para $n
+  let paramCount = 1;
+  const pgSql = sql.replace(/\?/g, () => `$${paramCount++}`);
+  
+  const result = await executarQuery(pgSql, params);
+  
+  // Tentar extrair ID se houver retorno
+  let lastID = 0;
+  if (result.rows && result.rows.length > 0 && result.rows[0].id) {
+    lastID = result.rows[0].id;
+  }
+  
+  return {
+    lastID: lastID,
+    changes: result.rowCount
+  };
 }
 
 module.exports = {
   inicializarConexao,
   fecharConexao,
   executarQuery,
+  executarQueryUnica,
+  executarComando,
   getPool
 };

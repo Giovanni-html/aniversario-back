@@ -39,7 +39,7 @@ async function salvarFoto(fotoData) {
   
   const resultado = await db.executarComando(
     `INSERT INTO fotos (google_drive_id, url, thumbnail_url, nome_arquivo, tamanho_bytes) 
-     VALUES (?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?) RETURNING id`,
     [google_drive_id, url, thumbnail_url || null, nome_arquivo, tamanho_bytes]
   );
   
