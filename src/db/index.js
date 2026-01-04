@@ -8,18 +8,23 @@ const usePostgres = process.env.DATABASE_URL ? true : false;
 
 let dbConnection;
 let confirmacoes;
+let fotos;
 
 if (usePostgres) {
   console.log('🐘 Usando PostgreSQL');
   dbConnection = require('./connection-postgres');
   confirmacoes = require('./confirmacoes-postgres');
+  // fotos usa SQLite-style queries que funcionam em ambos
+  fotos = require('./fotos');
 } else {
   console.log('📁 Usando SQLite');
   dbConnection = require('./connection');
   confirmacoes = require('./confirmacoes');
+  fotos = require('./fotos');
 }
 
 module.exports = {
   dbConnection,
-  confirmacoes
+  confirmacoes,
+  fotos
 };

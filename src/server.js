@@ -2,17 +2,18 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const { dbConnection } = require('./db');
+const { dbConnection, fotos } = require('./db');
 const { confirmarPresenca, listarConfirmacoes } = require('./api/confirmar');
 const { limparBanco, estatisticas, dashboardStats, deletarConfirmacao } = require('./api/admin');
+const { uploadFoto, listarFotos, deletarFoto } = require('./api/fotos');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors()); // Permitir requisições do frontend
-app.use(express.json()); // Parse JSON no body
-app.use(express.urlencoded({ extended: true })); // Parse form data
+app.use(express.json({ limit: '10mb' })); // Parse JSON no body - limit increased for base64 images
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse form data
 
 // Middleware de log
 app.use((req, res, next) => {
@@ -26,7 +27,7 @@ app.get('/', (req, res) => {
   res.json({
     message: 'API de Confirmação de Presença - Aniversário',
     status: 'online',
-    version: '1.0.0'
+    version: '1.1.0'
   });
 });
 
@@ -41,6 +42,11 @@ app.post('/api/admin/limpar-banco', limparBanco);
 app.get('/api/admin/estatisticas', estatisticas);
 app.get('/api/admin/dashboard', dashboardStats);
 app.delete('/api/admin/confirmacao/:id', deletarConfirmacao);
+
+// Rotas de fotos
+app.post('/api/fotos/upload', uploadFoto);
+app.get('/api/fotos', listarFotos);
+app.delete('/api/admin/fotos/:id', deletarFoto);
 
 // Middleware de erro 404
 app.use((req, res) => {
@@ -67,6 +73,9 @@ async function iniciar() {
     
     // Conectar ao banco de dados
     await dbConnection.inicializarConexao();
+    
+    // Criar tabela de fotos se não existir
+    await fotos.criarTabelaFotos();
     console.log('');
     
     // Iniciar servidor
@@ -79,6 +88,8 @@ async function iniciar() {
       console.log(`   GET  /                        - Health check`);
       console.log(`   POST /api/confirmar-presenca  - Confirmar presença`);
       console.log(`   GET  /api/confirmacoes        - Listar confirmações`);
+      console.log(`   POST /api/fotos/upload        - Upload de foto`);
+      console.log(`   GET  /api/fotos               - Listar fotos`);
       console.log('\n💡 Pressione Ctrl+C para parar o servidor\n');
     });
     
@@ -104,3 +115,4 @@ process.on('SIGINT', async () => {
 
 // Iniciar aplicação
 iniciar();
+
