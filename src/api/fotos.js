@@ -68,7 +68,7 @@ async function uploadFoto(req, res) {
     
     return res.status(500).json({
       success: false,
-      message: 'Erro ao enviar foto. Tente novamente.'
+      message: `Erro ao enviar foto: ${error.message}`
     });
   }
 }
