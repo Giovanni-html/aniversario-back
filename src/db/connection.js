@@ -1,4 +1,10 @@
-const sqlite3 = require('sqlite3').verbose();
+let sqlite3;
+try {
+  sqlite3 = require('sqlite3').verbose();
+} catch (e) {
+  // Ignora erro se não tiver sqlite3 (ex: produção)
+  console.log('⚠️ SQLite3 não encontrado ou erro ao carregar (ok se usando Postgres)');
+}
 const path = require('path');
 require('dotenv').config();
 
