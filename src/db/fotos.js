@@ -13,17 +13,38 @@ function setDbConnection(dbConnection) {
  * Create fotos table if it doesn't exist
  */
 async function criarTabelaFotos() {
-  const sql = `
-    CREATE TABLE IF NOT EXISTS fotos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      google_drive_id TEXT NOT NULL,
-      url TEXT NOT NULL,
-      thumbnail_url TEXT,
-      nome_arquivo TEXT,
-      tamanho_bytes INTEGER,
-      data_upload DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `;
+  let sql;
+  
+  // Detectar se é Postgres (via variável de ambiente ou propriedade injetada)
+  const isPostgres = !!process.env.DATABASE_URL;
+
+  if (isPostgres) {
+    // Sintaxe PostgreSQL
+    sql = `
+      CREATE TABLE IF NOT EXISTS fotos (
+        id SERIAL PRIMARY KEY,
+        google_drive_id TEXT NOT NULL,
+        url TEXT NOT NULL,
+        thumbnail_url TEXT,
+        nome_arquivo TEXT,
+        tamanho_bytes INTEGER,
+        data_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+  } else {
+    // Sintaxe SQLite
+    sql = `
+      CREATE TABLE IF NOT EXISTS fotos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        google_drive_id TEXT NOT NULL,
+        url TEXT NOT NULL,
+        thumbnail_url TEXT,
+        nome_arquivo TEXT,
+        tamanho_bytes INTEGER,
+        data_upload DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+  }
   
   await db.executarComando(sql);
   console.log('✅ Tabela fotos criada/verificada');
