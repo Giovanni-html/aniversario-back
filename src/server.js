@@ -2,10 +2,9 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const { dbConnection, fotos } = require('./db');
+const { dbConnection } = require('./db');
 const { confirmarPresenca, listarConfirmacoes } = require('./api/confirmar');
 const { limparBanco, estatisticas, dashboardStats, deletarConfirmacao } = require('./api/admin');
-const { uploadFoto, listarFotos, deletarFoto } = require('./api/fotos');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,10 +42,7 @@ app.get('/api/admin/estatisticas', estatisticas);
 app.get('/api/admin/dashboard', dashboardStats);
 app.delete('/api/admin/confirmacao/:id', deletarConfirmacao);
 
-// Rotas de fotos
-app.post('/api/fotos/upload', uploadFoto);
-app.get('/api/fotos', listarFotos);
-app.delete('/api/admin/fotos/:id', deletarFoto);
+
 
 // Middleware de erro 404
 app.use((req, res) => {
@@ -73,9 +69,6 @@ async function iniciar() {
     
     // Conectar ao banco de dados
     await dbConnection.inicializarConexao();
-    
-    // Criar tabela de fotos se não existir
-    await fotos.criarTabelaFotos();
     console.log('');
     
     // Iniciar servidor
@@ -88,8 +81,6 @@ async function iniciar() {
       console.log(`   GET  /                        - Health check`);
       console.log(`   POST /api/confirmar-presenca  - Confirmar presença`);
       console.log(`   GET  /api/confirmacoes        - Listar confirmações`);
-      console.log(`   POST /api/fotos/upload        - Upload de foto`);
-      console.log(`   GET  /api/fotos               - Listar fotos`);
       console.log('\n💡 Pressione Ctrl+C para parar o servidor\n');
     });
     
