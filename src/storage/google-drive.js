@@ -65,6 +65,7 @@ async function uploadFile(fileBuffer, fileName, mimeType) {
       body: bufferStream,
     },
     fields: 'id, name, webViewLink, webContentLink, size',
+    supportsAllDrives: true,
   });
 
   // Make file publicly viewable
@@ -74,12 +75,14 @@ async function uploadFile(fileBuffer, fileName, mimeType) {
       role: 'reader',
       type: 'anyone',
     },
+    supportsAllDrives: true,
   });
 
   // Get updated file info with sharing links
   const fileInfo = await drive.files.get({
     fileId: response.data.id,
     fields: 'id, name, webViewLink, webContentLink, thumbnailLink, size',
+    supportsAllDrives: true,
   });
 
   console.log(`✅ Uploaded to Google Drive: ${uniqueFileName} (ID: ${fileInfo.data.id})`);
@@ -103,6 +106,7 @@ async function deleteFile(fileId) {
   
   await drive.files.delete({
     fileId,
+    supportsAllDrives: true,
   });
 
   console.log(`🗑️ Deleted from Google Drive: ${fileId}`);
